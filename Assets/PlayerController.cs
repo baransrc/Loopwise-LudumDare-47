@@ -14,6 +14,7 @@ public class PlayerController : MonoBehaviour
     private float _timeElapsedSinceLastGrounded;
     private PlayerAnimationManager _playerAnimationManager;
 
+    [SerializeField] private float groundedHeight;
     [SerializeField] private LayerMask _jumpEnabledGrounds;
     [SerializeField] private float _groundColliderHeight = 1f;
     [SerializeField] private float _jumpVelocity = 10f; 
@@ -35,28 +36,31 @@ public class PlayerController : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D other)
     {
-        if (!other.gameObject.CompareTag($"Enemy"))
-        {
-            return;
-        }
+        // if (!other.gameObject.CompareTag($"Enemy"))
+        // {
+        //     return;
+        // }
 
         // _playerAnimationManager.SetState(PlayerAnimationState.Dead); // TODO: Uncomment this for death condition.
     }
 
     private bool IsGrounded(bool drawCollider = false)
     {
-        var grounded = Physics2D.OverlapBox(_collider2D.bounds.center - new Vector3(0f, _collider2D.bounds.extents.y + (_groundColliderHeight * 0.5f)), new Vector3(_collider2D.bounds.extents.x, _groundColliderHeight * 0.5f), 0, _jumpEnabledGrounds);
+        // var grounded = Physics2D.OverlapBox(_collider2D.bounds.center - new Vector3(0f, _collider2D.bounds.extents.y + (_groundColliderHeight * 0.5f)), new Vector3(_collider2D.bounds.extents.x, _groundColliderHeight * 0.5f), 0, _jumpEnabledGrounds);
+        //
+        // if (drawCollider)
+        // {
+        //     var rayColor = !grounded ? Color.red : Color.green;
+        //
+        //     Debug.DrawLine(_collider2D.bounds.center - new Vector3(_collider2D.bounds.extents.x, _collider2D.bounds.extents.y + _groundColliderHeight), _collider2D.bounds.center - new Vector3(-_collider2D.bounds.extents.x, _collider2D.bounds.extents.y + _groundColliderHeight), rayColor);
+        //     Debug.DrawLine(_collider2D.bounds.center - new Vector3(_collider2D.bounds.extents.x, _collider2D.bounds.extents.y), _collider2D.bounds.center - new Vector3(_collider2D.bounds.extents.x, _collider2D.bounds.extents.y + _groundColliderHeight) , rayColor);
+        //     Debug.DrawLine(_collider2D.bounds.center - new Vector3(-_collider2D.bounds.extents.x, _collider2D.bounds.extents.y), _collider2D.bounds.center - new Vector3(-_collider2D.bounds.extents.x, _collider2D.bounds.extents.y + _groundColliderHeight), rayColor);
+        // }
+        //
+        // return grounded;
 
-        if (drawCollider)
-        {
-            var rayColor = !grounded ? Color.red : Color.green;
+        return transform.position.y <= groundedHeight;
 
-            Debug.DrawLine(_collider2D.bounds.center - new Vector3(_collider2D.bounds.extents.x, _collider2D.bounds.extents.y + _groundColliderHeight), _collider2D.bounds.center - new Vector3(-_collider2D.bounds.extents.x, _collider2D.bounds.extents.y + _groundColliderHeight), rayColor);
-            Debug.DrawLine(_collider2D.bounds.center - new Vector3(_collider2D.bounds.extents.x, _collider2D.bounds.extents.y), _collider2D.bounds.center - new Vector3(_collider2D.bounds.extents.x, _collider2D.bounds.extents.y + _groundColliderHeight) , rayColor);
-            Debug.DrawLine(_collider2D.bounds.center - new Vector3(-_collider2D.bounds.extents.x, _collider2D.bounds.extents.y), _collider2D.bounds.center - new Vector3(-_collider2D.bounds.extents.x, _collider2D.bounds.extents.y + _groundColliderHeight), rayColor);
-        }
-
-        return grounded;
     }
 
     private void Jump()
@@ -106,9 +110,9 @@ public class PlayerController : MonoBehaviour
             horizontalDamping = _horizontalDampingWhenTurning;
         }
 
-        horizontalVelocity *= Mathf.Pow(1f - horizontalDamping, Time.deltaTime * 10f);
+        horizontalVelocity *= Mathf.Pow(1f - horizontalDamping, 10f);
     
-        if (Mathf.Abs(horizontalVelocity) > 0f)
+        if (horizontalVelocity != 0f)
         {
             _playerAnimationManager.SetState(PlayerAnimationState.Walking);
         }
@@ -116,9 +120,25 @@ public class PlayerController : MonoBehaviour
         _rigidbody2D.velocity = new Vector2(horizontalVelocity, _rigidbody2D.velocity.y);
     }
 
+    public int GetHorizontalDirection()
+    {
+        if (_rigidbody2D.velocity.x > 0)
+        {
+            return 1;
+        }
+        
+        else if (_rigidbody2D.velocity.x < 0)
+        {
+            return -1;
+        }
+
+        return 0;
+    }
+    
+
     private void Update() 
     {
-        Jump();
+        //Jump(); // TODO: Decide on Including Jump.
         Move();
     }  
 }
