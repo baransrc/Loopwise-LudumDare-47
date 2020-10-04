@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(PlayerFlip))]
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Collider2D))]
 [RequireComponent(typeof(PlayerAnimationManager))]
@@ -13,7 +14,8 @@ public class PlayerController : MonoBehaviour
     private float _timeElapsedSinceLastJump;
     private float _timeElapsedSinceLastGrounded;
     private PlayerAnimationManager _playerAnimationManager;
-
+    private PlayerFlip _playerFlip;
+    
     [SerializeField] private float groundedHeight;
     [SerializeField] private LayerMask _jumpEnabledGrounds;
     [SerializeField] private float _groundColliderHeight = 1f;
@@ -26,14 +28,19 @@ public class PlayerController : MonoBehaviour
     [Range(0,1)] [SerializeField] private float _coyoteTime = 0.2f;
     [Range(0,1)] [SerializeField] private float _cutJumpHeight = 0.3f;
 
-    private void Awake() 
+    private void Awake()
     {
+        _playerFlip = GetComponent<PlayerFlip>();
         _collider2D = GetComponent<BoxCollider2D>(); 
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _playerAnimationManager = GetComponent<PlayerAnimationManager>();
         _timeElapsedSinceLastJump = 0f;
     }
 
+    public bool FacingRight()
+    {
+        return _playerFlip.FacingRight;
+    }
     private void OnCollisionEnter2D(Collision2D other)
     {
         // if (!other.gameObject.CompareTag($"Enemy"))
@@ -138,7 +145,7 @@ public class PlayerController : MonoBehaviour
 
     private void Update() 
     {
-        //Jump(); // TODO: Decide on Including Jump.
+        Jump(); // TODO: Decide on Including Jump.
         Move();
     }  
 }

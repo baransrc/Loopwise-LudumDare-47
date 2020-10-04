@@ -5,8 +5,12 @@ using UnityEngine;
 
 public class GameController : MonoBehaviour
 {
-    [SerializeField] private GameObject floorPrefab;
     [SerializeField] private PlayerController player;
+    [SerializeField] private GameObject enemyPrefab;
+    [SerializeField] private Vector3 enemySpawnDistance;
+    [SerializeField] private float enemyYPosition;
+    [SerializeField] private float enemySpawnDuration;
+    [SerializeField] private GameObject floorPrefab;
     [SerializeField] private int initialLeft;
     [SerializeField] private int initialRight;
     [SerializeField] private float floorY;
@@ -14,14 +18,36 @@ public class GameController : MonoBehaviour
     
     private GameObject _leftmostFloor;
     private GameObject _rightmostFloor;
-    
-
     private List<GameObject> _floors;
+    private float _enemySpawnCounter;
 
     private void Awake()
     {
         _floors = new List<GameObject>();
+        _enemySpawnCounter = enemySpawnDuration;
         GenerateFloors();
+    }
+
+    private void GenerateEnemy()
+    {
+        _enemySpawnCounter += Time.deltaTime;
+        
+        if (_enemySpawnCounter < enemySpawnDuration)
+        {
+            return;
+        }
+
+        _enemySpawnCounter = 0f;
+        
+        var enemy = Instantiate(enemyPrefab).GetComponent<EnemyController>();
+        enemy.Initialize(player);
+
+        var playerPosition = player.transform.position;
+        playerPosition.y = enemyYPosition;
+        
+        enemy.transform.position = player.FacingRight()
+            ? playerPosition + enemySpawnDistance
+            : playerPosition - enemySpawnDistance;
     }
 
     private void GenerateFloors()
@@ -80,5 +106,6 @@ public class GameController : MonoBehaviour
     private void Update()
     {
         MoveFloors();
+        GenerateEnemy();
     }
 }
