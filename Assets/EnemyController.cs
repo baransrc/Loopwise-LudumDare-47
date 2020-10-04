@@ -18,24 +18,46 @@ public class EnemyController : MonoBehaviour
     [SerializeField] private float walkingTime;
     [SerializeField] private float idleTime;
 
+    private int _id;
+    private static int _currentId = 0;
     private EnemyAnimationManager _enemyAnimationManager;
     private EnemyState _enemyState;
     private float _score;
+    private float _initialY;
     private float _timer;
     private Coroutine _dyingCoroutine;
-    [SerializeField] private PlayerController _player;
+    private GameController _gameController;
+    private PlayerController _player;
 
-    public void Initialize(PlayerController player)
+    public bool IsRight { get; set; }
+
+    public int Id { get {return _id;} }
+
+    public void Initialize(GameController gameController, PlayerController player)
     {
+        _id = _currentId;
+        _currentId++;
+        
+        _gameController = gameController;
         _player = player;
+        
+        _initialY = transform.position.y; // TODO: Do this better.
+        
         _enemyAnimationManager = GetComponent<EnemyAnimationManager>();
+        
         _dyingCoroutine = null;
+        
         SetState(EnemyState.Walking);
+        
         _timer = 0f;
     }
 
     private IEnumerator Die()
     {
+        _gameController.ChangeScore(AttackType.Sum, 1);
+        
+        _gameController.RemoveEnemyFromList(this);
+        
         SetState(EnemyState.Dead);
         
         yield return new WaitForSeconds(1);
@@ -93,14 +115,14 @@ public class EnemyController : MonoBehaviour
         _enemyAnimationManager.SetState(_enemyState);
     }
 
-    private void GoTowardsPlayer()
+    public void GoTowards(Vector3 position)
     {
         if (_enemyState != EnemyState.Walking)
         {
             return;
         }
 
-        var deltaX = (_player.transform.position.x - transform.position.x);
+        var deltaX = (position.x - transform.position.x);
 
         if (Mathf.Abs(deltaX) <= 1)
         {
@@ -110,16 +132,16 @@ public class EnemyController : MonoBehaviour
         }
 
         var direction = deltaX > 0 ? Vector3.right : Vector3.left;
+        position.y = _initialY;
 
         transform.position += direction * speed * Time.deltaTime;
-        transform.position = Mathf.Abs(transform.position.x - _player.transform.position.x) <= 1f ? 
-            _player.transform.position - direction * 1f : transform.position;
+        transform.position = Mathf.Abs(transform.position.x - position.x) <= 1f ? 
+            position - direction * 1f : transform.position;
 
     }
 
     private void Update()
     {
         DetermineStateByTimer();
-        GoTowardsPlayer();
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using DefaultNamespace;
 using UnityEngine;
 
 [RequireComponent(typeof(PlayerFlip))]
@@ -16,6 +17,10 @@ public class PlayerController : MonoBehaviour
     private PlayerAnimationManager _playerAnimationManager;
     private PlayerFlip _playerFlip;
     
+    
+    public AttackType AttackType;
+
+    [SerializeField] private GameController gameController;
     [SerializeField] private float groundedHeight;
     [SerializeField] private LayerMask _jumpEnabledGrounds;
     [SerializeField] private float _groundColliderHeight = 1f;
@@ -28,6 +33,17 @@ public class PlayerController : MonoBehaviour
     [Range(0,1)] [SerializeField] private float _coyoteTime = 0.2f;
     [Range(0,1)] [SerializeField] private float _cutJumpHeight = 0.3f;
 
+    private AttackType[] _attackTypes =
+    {
+        AttackType.Sum,
+        AttackType.Substract,
+        AttackType.Multiply,
+        AttackType.Divide,
+        AttackType.CommentOut
+    };
+
+    private int _currentAttackTypeIndex = 0;
+    
     private void Awake()
     {
         _playerFlip = GetComponent<PlayerFlip>();
@@ -36,7 +52,7 @@ public class PlayerController : MonoBehaviour
         _playerAnimationManager = GetComponent<PlayerAnimationManager>();
         _timeElapsedSinceLastJump = 0f;
     }
-
+    
     public bool FacingRight()
     {
         return _playerFlip.FacingRight;
@@ -50,7 +66,7 @@ public class PlayerController : MonoBehaviour
 
         // _playerAnimationManager.SetState(PlayerAnimationState.Dead); // TODO: Uncomment this for death condition.
     }
-
+    
     private bool IsGrounded(bool drawCollider = false)
     {
         // var grounded = Physics2D.OverlapBox(_collider2D.bounds.center - new Vector3(0f, _collider2D.bounds.extents.y + (_groundColliderHeight * 0.5f)), new Vector3(_collider2D.bounds.extents.x, _groundColliderHeight * 0.5f), 0, _jumpEnabledGrounds);
@@ -63,41 +79,71 @@ public class PlayerController : MonoBehaviour
         //     Debug.DrawLine(_collider2D.bounds.center - new Vector3(_collider2D.bounds.extents.x, _collider2D.bounds.extents.y), _collider2D.bounds.center - new Vector3(_collider2D.bounds.extents.x, _collider2D.bounds.extents.y + _groundColliderHeight) , rayColor);
         //     Debug.DrawLine(_collider2D.bounds.center - new Vector3(-_collider2D.bounds.extents.x, _collider2D.bounds.extents.y), _collider2D.bounds.center - new Vector3(-_collider2D.bounds.extents.x, _collider2D.bounds.extents.y + _groundColliderHeight), rayColor);
         // }
-        //
+        ///
         // return grounded;
 
         return transform.position.y <= groundedHeight;
-
     }
 
-    private void Jump()
+    public string GetAttackTypeString()
     {
-        _timeElapsedSinceLastJump -= Time.deltaTime;
-        _timeElapsedSinceLastGrounded -= Time.deltaTime;
-
-        if (IsGrounded(true))
+        switch (AttackType)
         {
-            _timeElapsedSinceLastGrounded = _coyoteTime;
+            default:
+                return "+=";
+            case AttackType.Multiply:
+                return "*=";
+            case AttackType.Sum:
+                return "+=";
+            case AttackType.Substract:
+                return "-=";
+            case AttackType.Divide:
+                return "/=";
+            case AttackType.CommentOut:
+                return "Comment Out";
         }
-
-        if (Input.GetButtonDown("Jump"))
-        {
-            _timeElapsedSinceLastJump = _allowedTimeBetweenJumps;
-        }
-
-        if (Input.GetButtonUp("Jump") && _rigidbody2D.velocity.y > 0f)
-        {
-            _rigidbody2D.velocity = new Vector2(_rigidbody2D.velocity.x, _rigidbody2D.velocity.y * _cutJumpHeight);
-        }
-
-        if ((_timeElapsedSinceLastJump > 0f) && (_timeElapsedSinceLastGrounded > 0f))
-        {
-            _timeElapsedSinceLastJump = 0f;
-            _timeElapsedSinceLastGrounded = 0f;
-            
-            _rigidbody2D.velocity = new Vector2(_rigidbody2D.velocity.x, _jumpVelocity);
-        }   
     }
+
+    private void ChangeCurrentAttackType()
+    {
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            _currentAttackTypeIndex = (_currentAttackTypeIndex + 1) % _attackTypes.Length;
+            AttackType = _attackTypes[_currentAttackTypeIndex];
+        }
+        
+        gameController.UpdateConditionText();
+    }
+    
+
+    // private void Jump()
+    // {
+    //     _timeElapsedSinceLastJump -= Time.deltaTime;
+    //     _timeElapsedSinceLastGrounded -= Time.deltaTime;
+    //
+    //     if (IsGrounded(true))
+    //     {
+    //         _timeElapsedSinceLastGrounded = _coyoteTime;
+    //     }
+    //
+    //     if (Input.GetButtonDown("Jump"))
+    //     {
+    //         _timeElapsedSinceLastJump = _allowedTimeBetweenJumps;
+    //     }
+    //
+    //     if (Input.GetButtonUp("Jump") && _rigidbody2D.velocity.y > 0f)
+    //     {
+    //         _rigidbody2D.velocity = new Vector2(_rigidbody2D.velocity.x, _rigidbody2D.velocity.y * _cutJumpHeight);
+    //     }
+    //
+    //     if ((_timeElapsedSinceLastJump > 0f) && (_timeElapsedSinceLastGrounded > 0f))
+    //     {
+    //         _timeElapsedSinceLastJump = 0f;
+    //         _timeElapsedSinceLastGrounded = 0f;
+    //         
+    //         _rigidbody2D.velocity = new Vector2(_rigidbody2D.velocity.x, _jumpVelocity);
+    //     }   
+    // }
 
     private void Move(bool autoMove = false)
     {
@@ -141,11 +187,23 @@ public class PlayerController : MonoBehaviour
 
         return 0;
     }
-    
 
+    private void Flip()
+    {
+        _playerFlip.Flip();
+    }
+    
     private void Update() 
     {
-        Jump(); // TODO: Decide on Including Jump.
+        // Jump(); // TODO: Decide on Including Jump.
+        
+        if (gameController.GameIsPaused())
+        {
+            return;
+        }
+        
+        Flip();
         Move();
+        ChangeCurrentAttackType();
     }  
 }

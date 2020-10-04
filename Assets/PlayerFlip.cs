@@ -11,7 +11,7 @@ public class PlayerFlip : MonoBehaviour
         FacingRight = transform.localScale.x > 0;
     }
 
-    private void Flip()
+    public void Flip()
     {
         var direction = Input.GetAxisRaw("Horizontal");
 
@@ -22,10 +22,5 @@ public class PlayerFlip : MonoBehaviour
             FacingRight = (direction > 0f);
             transform.localScale = new Vector3(-1f * transform.localScale.x,  transform.localScale.y, transform.localScale.z);
         }
-    }
-
-    void Update()
-    {
-        Flip();
     }
 }
