@@ -435,7 +435,8 @@ MonoBehaviour:
   speed: 1
   walkingTime: 2
   idleTime: 1
-  _player: {fileID: 0}
+  scoreText: {fileID: 1360425579259093756}
+  willBeShotBy: 0
 --- !u!114 &6890405601959390670
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -165,6 +165,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 21f6e38ed0a4a9444ba56dd5ffe7b35a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AttackType: 0
+  skillPrefab: {fileID: 3744640181992004928, guid: dd4aa23508c3bfd4ea3e30eae54bbbf8,
+    type: 3}
+  gameController: {fileID: 0}
+  groundedHeight: 0
   _jumpEnabledGrounds:
     serializedVersion: 2
     m_Bits: 512

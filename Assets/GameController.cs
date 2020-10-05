@@ -53,7 +53,26 @@ public class GameController : MonoBehaviour
             return;
         }
 
-        scoreCondition.value += enemyScore;
+        switch (attackType)
+        {
+            default:
+                scoreCondition.value += enemyScore;
+                break;
+            case AttackType.Multiply:
+                scoreCondition.value *= enemyScore;
+                break;
+            case AttackType.Sum:
+                scoreCondition.value += enemyScore;
+                break;
+            case AttackType.Substract:
+                scoreCondition.value -= enemyScore;
+                break;
+            case AttackType.Divide:
+                scoreCondition.value /= enemyScore;
+                break;
+            case AttackType.CommentOut:
+                break;
+        }
         
         UpdateConditionText();
     }
@@ -106,6 +125,11 @@ public class GameController : MonoBehaviour
 
     private void MoveEnemies()
     {
+        if (player.castingSkill)
+        {
+            return;
+        }
+        
         for (int i = 0; i < _rightEnemies.Count; i++)
         {
             var current = _rightEnemies[i];
@@ -167,6 +191,27 @@ public class GameController : MonoBehaviour
             enemy.transform.position = playerPosition - enemySpawnDistance;
             enemy.IsRight = false;
             _leftEnemies.Add(enemy);
+        }
+    }
+
+    public EnemyController GetEnemyInFront(bool isRight)
+    {
+        if (isRight)
+        {
+            if (_rightEnemies.Count <= 0)
+            {
+                return null;
+            }
+            return _rightEnemies[0];
+        }
+        else
+        {
+            if (_leftEnemies.Count <= 0)
+            {
+                return null;
+            }
+
+            return _leftEnemies[0];
         }
     }
 

@@ -41,10 +41,10 @@ MonoBehaviour:
     value: 0.179
   size:
     overrideState: 0
-    value: 1
+    value: 1.68
   lumContrib:
     overrideState: 0
-    value: 0.8
+    value: 0.78
 --- !u!114 &1740704242247782997
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -97,13 +97,13 @@ MonoBehaviour:
     value: 1
   intensity:
     overrideState: 1
-    value: 95.2
+    value: 30
   threshold:
     overrideState: 1
     value: 3.11
   softKnee:
     overrideState: 1
-    value: 0.373
+    value: 1
   clamp:
     overrideState: 0
     value: 65472
@@ -153,7 +153,7 @@ MonoBehaviour:
     value: {x: 0.5, y: 0.5}
   intensity:
     overrideState: 1
-    value: 0.344
+    value: 0.458
   smoothness:
     overrideState: 0
     value: 0.2

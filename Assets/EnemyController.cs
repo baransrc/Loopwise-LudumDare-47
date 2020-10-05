@@ -2,7 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using DefaultNamespace;
+using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public enum EnemyState
 {
@@ -17,29 +19,35 @@ public class EnemyController : MonoBehaviour
     [SerializeField] private float speed;
     [SerializeField] private float walkingTime;
     [SerializeField] private float idleTime;
+    [FormerlySerializedAs("textMesh")] [SerializeField] private TextMeshPro scoreText;
 
     private int _id;
     private static int _currentId = 0;
     private EnemyAnimationManager _enemyAnimationManager;
     private EnemyState _enemyState;
-    private float _score;
+    private int _score;
     private float _initialY;
     private float _timer;
     private Coroutine _dyingCoroutine;
     private GameController _gameController;
     private PlayerController _player;
 
+    public AttackType willBeShotBy;
+    
     public bool IsRight { get; set; }
 
     public int Id { get {return _id;} }
 
-    public void Initialize(GameController gameController, PlayerController player)
+    public void Initialize(GameController gameController, PlayerController player, int score = 1)
     {
         _id = _currentId;
         _currentId++;
         
         _gameController = gameController;
         _player = player;
+
+        _score = score;
+        scoreText.text = score.ToString();
         
         _initialY = transform.position.y; // TODO: Do this better.
         
@@ -54,7 +62,7 @@ public class EnemyController : MonoBehaviour
 
     private IEnumerator Die()
     {
-        _gameController.ChangeScore(AttackType.Sum, 1);
+        _gameController.ChangeScore(willBeShotBy, _score);
         
         _gameController.RemoveEnemyFromList(this);
         
@@ -67,6 +75,13 @@ public class EnemyController : MonoBehaviour
     
     private void OnCollisionEnter2D(Collision2D other)
     {
+        if (!other.gameObject.CompareTag("Skill"))
+        {
+            return;
+        }
+        
+        Destroy(other.gameObject);
+
         if (_dyingCoroutine != null)
         {
             return;
@@ -124,7 +139,7 @@ public class EnemyController : MonoBehaviour
 
         var deltaX = (position.x - transform.position.x);
 
-        if (Mathf.Abs(deltaX) <= 1)
+        if (Mathf.Abs(deltaX) <= 0.55)
         {
             _timer = 0;
             SetState(EnemyState.Idle);
@@ -135,8 +150,8 @@ public class EnemyController : MonoBehaviour
         position.y = _initialY;
 
         transform.position += direction * speed * Time.deltaTime;
-        transform.position = Mathf.Abs(transform.position.x - position.x) <= 1f ? 
-            position - direction * 1f : transform.position;
+        transform.position = Mathf.Abs(transform.position.x - position.x) <= 0.55f ? 
+            position - direction * 0.55f : transform.position;
 
     }
 

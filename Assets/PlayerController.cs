@@ -16,10 +16,14 @@ public class PlayerController : MonoBehaviour
     private float _timeElapsedSinceLastGrounded;
     private PlayerAnimationManager _playerAnimationManager;
     private PlayerFlip _playerFlip;
+    public bool castingSkill;
+    private Coroutine _castingSkillCoroutine;
     
     
     public AttackType AttackType;
 
+    [SerializeField] private GameObject skillPrefab;
+    private Skill _skill;
     [SerializeField] private GameController gameController;
     [SerializeField] private float groundedHeight;
     [SerializeField] private LayerMask _jumpEnabledGrounds;
@@ -51,6 +55,9 @@ public class PlayerController : MonoBehaviour
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _playerAnimationManager = GetComponent<PlayerAnimationManager>();
         _timeElapsedSinceLastJump = 0f;
+
+        _castingSkillCoroutine = null;
+        castingSkill = false;
     }
     
     public bool FacingRight()
@@ -59,11 +66,14 @@ public class PlayerController : MonoBehaviour
     }
     private void OnCollisionEnter2D(Collision2D other)
     {
-        // if (!other.gameObject.CompareTag($"Enemy"))
-        // {
-        //     return;
-        // }
-
+        if (!other.gameObject.CompareTag($"Enemy"))
+        {
+            return;
+        }
+        
+        Debug.Log("Ya Dead.");
+        
+        // Set a death bool.
         // _playerAnimationManager.SetState(PlayerAnimationState.Dead); // TODO: Uncomment this for death condition.
     }
     
@@ -106,6 +116,11 @@ public class PlayerController : MonoBehaviour
 
     private void ChangeCurrentAttackType()
     {
+        if (castingSkill)
+        {
+            return;
+        }
+        
         if (Input.GetKeyDown(KeyCode.Tab))
         {
             _currentAttackTypeIndex = (_currentAttackTypeIndex + 1) % _attackTypes.Length;
@@ -147,6 +162,11 @@ public class PlayerController : MonoBehaviour
 
     private void Move(bool autoMove = false)
     {
+        if (castingSkill)
+        {
+            return;
+        }
+        
         var horizontalVelocity = _rigidbody2D.velocity.x;
         horizontalVelocity += _horizontalSpeed * Input.GetAxisRaw("Horizontal");
         
@@ -188,15 +208,67 @@ public class PlayerController : MonoBehaviour
         return 0;
     }
 
+    public void CastSkill()
+    {
+        if (!Input.GetKeyDown(KeyCode.Space))
+        {
+            return;
+        }
+        
+        _rigidbody2D.velocity = new Vector2(0f, _rigidbody2D.velocity.y);
+
+        var enemyInFront = GetEnemyInFront();
+
+        if (enemyInFront == null)
+        {
+            return;
+        }
+        
+        if (_castingSkillCoroutine != null)
+        {
+            return;
+        }
+        
+        _castingSkillCoroutine = StartCoroutine(CastSkillCoroutine());
+    }
+
+    public EnemyController GetEnemyInFront()
+    {
+        return gameController.GetEnemyInFront(_playerFlip.FacingRight);
+    }
+
+    private IEnumerator CastSkillCoroutine()
+    {
+        _playerAnimationManager.SetState(PlayerAnimationState.CastingSkill);
+        castingSkill = true;
+        yield return new WaitForSeconds(1.5f);
+        
+        var enemyController = GetEnemyInFront();
+        if (enemyController == null)
+        {
+            yield break;
+        }
+        
+        _skill = Instantiate(skillPrefab).GetComponent<Skill>();
+        _skill.Initialize(this);
+        _skill.ShootTo(enemyController, AttackType);
+        _playerAnimationManager.SetState(PlayerAnimationState.Idle);
+        castingSkill = false;
+        _castingSkillCoroutine = null;
+    }
+
     private void Flip()
     {
+        if (castingSkill)
+        {
+            return;
+        }
+        
         _playerFlip.Flip();
     }
     
     private void Update() 
     {
-        // Jump(); // TODO: Decide on Including Jump.
-        
         if (gameController.GameIsPaused())
         {
             return;
@@ -204,6 +276,7 @@ public class PlayerController : MonoBehaviour
         
         Flip();
         Move();
+        CastSkill();
         ChangeCurrentAttackType();
     }  
 }
