@@ -5,6 +5,7 @@ using System.Linq;
 using DefaultNamespace;
 using TMPro;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class GameController : MonoBehaviour
 {
@@ -164,7 +165,7 @@ public class GameController : MonoBehaviour
         if (_leftEnemies.Count + _rightEnemies.Count >= maxEnemyCount)
         {
             return;
-        }
+        }    
         
         if (_enemySpawnCounter < enemySpawnDuration)
         {
@@ -174,7 +175,8 @@ public class GameController : MonoBehaviour
         _enemySpawnCounter = 0f;
         
         var enemy = Instantiate(enemyPrefab).GetComponent<EnemyController>();
-        enemy.Initialize(this, player);
+        enemy.Initialize(this, player,Random.Range(1, 
+            _endConditions[_endConditions.FindIndex(x => x.specialEndConditionName == SpecialEndConditionName.PlayerScore)].valueToRelate / 4));
 
         var playerPosition = player.transform.position;
         playerPosition.y = enemyYPosition;
