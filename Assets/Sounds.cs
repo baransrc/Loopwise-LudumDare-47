@@ -6,4 +6,5 @@
    Death,
    Hit,
    Walking,
+   LevelUp,
 }

@@ -83,6 +83,11 @@ public class EndCondition
         value = initialValue;
     }
 
+    public int GetValueToRandomize()
+    {
+        return valueToRelate > initialValue ? valueToRelate : initialValue;
+    }
+
     public string GetValue()
     {
         return valueType == ValueType.Bool ? (value != 0).ToString().ToLower() : value.ToString();

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using DefaultNamespace;
 using UnityEngine;
 
@@ -81,6 +82,12 @@ public class Skill : MonoBehaviour
         {
             step += Time.deltaTime / shotDuration;
             step = (step > 1f) ? 1f : step;
+
+            if (_enemyController == null)
+            {
+                Destroy(gameObject);
+                yield break;
+            }
 
             transform.position = Vector3.Lerp(initialPosition, _enemyController.transform.position, step);
 

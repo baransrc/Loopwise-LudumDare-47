@@ -5,6 +5,7 @@ using System.Linq;
 using DefaultNamespace;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 public class GameController : MonoBehaviour
@@ -21,16 +22,20 @@ public class GameController : MonoBehaviour
     [SerializeField] private float floorY;
     [SerializeField] private float maxFloorDistance;
     [SerializeField] private EndCondition _gameIsPaused;
-    [SerializeField] private List<EndCondition> _endConditions;
     [SerializeField] private TextMeshProUGUI _conditionText;
     [SerializeField] private float _attackRadius;
-
+    [SerializeField] private List<LevelData> _levelData;
+    [SerializeField] private StripeManager _stripeManager;
+    
+    private int _levelIndex = 0;
+    private List<EndCondition> _endConditions;
     
     public CameraUtility cameraUtility;
 
     private List<EnemyController> _leftEnemies;
     private List<EnemyController> _rightEnemies;
     private bool _canEnemiesMove = true;
+    public bool mainMenu = true;
     
     private GameObject _leftmostFloor;
     private GameObject _rightmostFloor;
@@ -38,6 +43,7 @@ public class GameController : MonoBehaviour
     private float _enemySpawnCounter;
     private bool _canGenerateEnemies = true;
     private bool _canCheckForEndConditions = true;
+    public bool loadingNextLevel;
 
     private void Awake()
     {
@@ -46,8 +52,10 @@ public class GameController : MonoBehaviour
         _floors = new List<GameObject>();
         _enemySpawnCounter = enemySpawnDuration;
         GenerateFloors();
+        
+        _stripeManager.PlayStripes();
+        _endConditions = _levelData[_levelIndex].EndConditions;
         UpdateConditionText();
-
     }
 
     public void ChangeScore(AttackType attackType, int enemyScore)
@@ -87,6 +95,14 @@ public class GameController : MonoBehaviour
 
     public void UpdateConditionText()
     {
+        if (mainMenu)
+        {
+            _conditionText.text =
+                "while(gameStarted == false)\n{\n  // This wizard is Loopwise!\n  // To break out of loops,\n  // He uses operators on monsters!" +
+                "\n  // Press Enter to play the game!";
+            return;
+        }
+        
         var newText = "while (";
         var comments =  "";
         var conditionals = "" + _gameIsPaused.GetConditionText() + " && ";
@@ -116,9 +132,10 @@ public class GameController : MonoBehaviour
             return;
         }
         
-        if (_endConditions.All(x => x.DoesEndConditionMet()))
+        if (_endConditions.All(x => !x.DoesEndConditionMet()))
         {
-            Debug.Log("Game Has Ended.");
+            Debug.Log("Conditions are met");
+            StartCoroutine(NextLevelCoroutine());
         }
     }
     
@@ -198,8 +215,15 @@ public class GameController : MonoBehaviour
         _enemySpawnCounter = 0f;
         
         var enemy = Instantiate(enemyPrefab).GetComponent<EnemyController>();
-        enemy.Initialize(this, player,Random.Range(1, 
-            _endConditions[_endConditions.FindIndex(x => x.specialEndConditionName == SpecialEndConditionName.PlayerScore)].valueToRelate / 4));
+        var randomizedValue = Mathf.Abs(_endConditions[_endConditions.FindIndex(x => x.specialEndConditionName == SpecialEndConditionName.PlayerScore)].GetValueToRandomize() / 4);
+        var score = Random.Range(-randomizedValue, randomizedValue);
+
+        if (score == 0)
+        {
+            score = 1;
+        }
+        
+        enemy.Initialize(this, player,score);
 
         var playerPosition = player.transform.position;
         playerPosition.y = enemyYPosition;
@@ -218,6 +242,45 @@ public class GameController : MonoBehaviour
             _leftEnemies.Add(enemy);
         }
     }
+
+    public IEnumerator NextLevelCoroutine()
+    {
+        loadingNextLevel = true;
+        _canEnemiesMove = false;
+        _canGenerateEnemies = false;
+        _canCheckForEndConditions = false;
+        
+        yield return new WaitForSeconds(2f);
+
+        foreach (var enemy in _leftEnemies)
+        {
+            Destroy(enemy.gameObject);
+        }
+
+        foreach (var enemy in _rightEnemies)
+        {
+            Destroy(enemy.gameObject);
+        }
+        
+        _stripeManager.PlayStripes();
+        AudioManager.Instance.PlaySound(Sounds.LevelUp);
+        _leftEnemies.Clear();
+        _rightEnemies.Clear();
+
+        _levelIndex = (_levelIndex + 1) % _levelData.Count;
+
+        _endConditions = _levelData[_levelIndex].EndConditions; 
+        
+        player.isDead = false;
+        
+        _canEnemiesMove = true;
+        _canCheckForEndConditions = true;
+        _canGenerateEnemies = true;
+        
+        UpdateConditionText();
+
+        loadingNextLevel = false;
+    }
     
     public IEnumerator LoseGameCoroutine()
     {
@@ -226,6 +289,8 @@ public class GameController : MonoBehaviour
         _canCheckForEndConditions = false;
 
         yield return new WaitForSeconds(2f);
+        
+        _stripeManager.PlayStripes();
 
         foreach (var enemy in _leftEnemies)
         {
@@ -327,7 +392,23 @@ public class GameController : MonoBehaviour
                 break;
         }
     }
-    
+
+    void CheckForGameStart()
+    {
+        if (!mainMenu)
+        {
+            return;
+        }
+
+        if (!Input.GetKeyDown(KeyCode.Return))
+        {
+            return;
+        }
+
+        mainMenu = false;
+        
+        UpdateConditionText();
+    }
     
     private void CheckForPause()
     {
@@ -350,6 +431,18 @@ public class GameController : MonoBehaviour
 
     private void Update()
     {
+        CheckForGameStart();
+        
+        if (mainMenu)
+        {
+            return;
+        }
+
+        if (loadingNextLevel)
+        {
+            return;
+        }
+        
         CheckForPause();
         MoveFloors();
         GenerateEnemy();

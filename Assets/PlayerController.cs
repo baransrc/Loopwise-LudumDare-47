@@ -2,8 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using DefaultNamespace;
+using TMPro;
 using UnityEngine;
 
+[RequireComponent(typeof(TextMeshPro))]
 [RequireComponent(typeof(PlayerFlip))]
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Collider2D))]
@@ -36,7 +38,8 @@ public class PlayerController : MonoBehaviour
     [Range(0,1)] [SerializeField] private float _horizontalDampingWhenTurning = 0.22f;
     // [Range(0,1)] [SerializeField] private float _coyoteTime = 0.2f;
     // [Range(0,1)] [SerializeField] private float _cutJumpHeight = 0.3f;
-
+    [SerializeField] private TextMeshPro _warningText;
+    
     public bool isDead = false;
 
     private AttackType[] _attackTypes =
@@ -62,6 +65,58 @@ public class PlayerController : MonoBehaviour
         castingSkill = false;
     }
     
+    private IEnumerator ShowWarningText(float fadeInDuration = 0.2f)
+    {
+        var step = 0f;
+        var initialColor = new Color(_warningText.color.r, _warningText.color.g, _warningText.color.b, 0);
+        var finalColor = new Color(initialColor.r, initialColor.g, initialColor.b, 1);
+        
+        _warningText.color = initialColor;
+
+        while (step < 1f)
+        {
+            step += Time.deltaTime / fadeInDuration;
+
+            _warningText.color = Color.Lerp(initialColor, finalColor, step);
+
+            yield return 0;
+        }
+    }
+
+    private IEnumerator EraseWarningText(float fadeOutDuration = 0.2f)
+    {
+        var step = 0f;
+        var initialColor = new Color(_warningText.color.r, _warningText.color.g, _warningText.color.b, 1);
+        var finalColor = new Color(initialColor.r, initialColor.g, initialColor.b, 0);
+        
+        _warningText.color = initialColor;
+
+        while (step < 1f)
+        {
+            step += Time.deltaTime / fadeOutDuration;
+
+            _warningText.color = Color.Lerp(initialColor, finalColor, step);
+
+            yield return 0;
+        }
+    }
+
+    private IEnumerator ShowWarning()
+    {
+        if (transform.localScale.x == -1)
+        {
+            _warningText.transform.localScale = new Vector3(-1, 1,1);
+        }
+        else
+        {
+            _warningText.transform.localScale = Vector3.one;
+
+        }
+        yield return ShowWarningText();
+        yield return new WaitForSeconds(1f);
+        yield return EraseWarningText();
+    }
+    
     public bool FacingRight()
     {
         return _playerFlip.FacingRight;
@@ -76,6 +131,7 @@ public class PlayerController : MonoBehaviour
         
         isDead = true;
         AudioManager.Instance.PlaySound(Sounds.Death);
+        AudioManager.Instance.StopSound(Sounds.Walking);
         _playerAnimationManager.SetState(PlayerAnimationState.Dead); // TODO: Uncomment this for death condition.
 
         StartCoroutine(LoseGameCoroutine());
@@ -252,6 +308,7 @@ public class PlayerController : MonoBehaviour
 
         if (Mathf.Abs(enemyInFront.transform.position.x - transform.position.x) > 7f)
         {
+            StartCoroutine(ShowWarning());
             return;
         }
         
@@ -313,6 +370,16 @@ public class PlayerController : MonoBehaviour
         }
 
         if (isDead)
+        {
+            return;
+        }
+
+        if (gameController.mainMenu)
+        {
+            return;
+        }
+
+        if (gameController.loadingNextLevel)
         {
             return;
         }
