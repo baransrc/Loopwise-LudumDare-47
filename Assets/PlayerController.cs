@@ -12,8 +12,8 @@ public class PlayerController : MonoBehaviour
 {
     private BoxCollider2D _collider2D;
     private Rigidbody2D _rigidbody2D;
-    private float _timeElapsedSinceLastJump;
-    private float _timeElapsedSinceLastGrounded;
+    // private float _timeElapsedSinceLastJump;
+    // private float _timeElapsedSinceLastGrounded;
     private PlayerAnimationManager _playerAnimationManager;
     private PlayerFlip _playerFlip;
     public bool castingSkill;
@@ -25,17 +25,19 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GameObject skillPrefab;
     private Skill _skill;
     [SerializeField] private GameController gameController;
-    [SerializeField] private float groundedHeight;
-    [SerializeField] private LayerMask _jumpEnabledGrounds;
-    [SerializeField] private float _groundColliderHeight = 1f;
-    [SerializeField] private float _jumpVelocity = 10f; 
-    [SerializeField] private float _allowedTimeBetweenJumps = 0.15f;
+    // [SerializeField] private float groundedHeight;
+    // [SerializeField] private LayerMask _jumpEnabledGrounds;
+    // [SerializeField] private float _groundColliderHeight = 1f;
+    // [SerializeField] private float _jumpVelocity = 10f; 
+    // [SerializeField] private float _allowedTimeBetweenJumps = 0.15f;
     [SerializeField] private float _horizontalSpeed = 3f;
     [Range(0,1)] [SerializeField] private float _horizontalDampingNormal = 0.22f;
     [Range(0,1)] [SerializeField] private float _horizontalDampingWhenStopping = 0.22f;
     [Range(0,1)] [SerializeField] private float _horizontalDampingWhenTurning = 0.22f;
-    [Range(0,1)] [SerializeField] private float _coyoteTime = 0.2f;
-    [Range(0,1)] [SerializeField] private float _cutJumpHeight = 0.3f;
+    // [Range(0,1)] [SerializeField] private float _coyoteTime = 0.2f;
+    // [Range(0,1)] [SerializeField] private float _cutJumpHeight = 0.3f;
+
+    public bool isDead = false;
 
     private AttackType[] _attackTypes =
     {
@@ -54,7 +56,7 @@ public class PlayerController : MonoBehaviour
         _collider2D = GetComponent<BoxCollider2D>(); 
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _playerAnimationManager = GetComponent<PlayerAnimationManager>();
-        _timeElapsedSinceLastJump = 0f;
+        // _timeElapsedSinceLastJump = 0f;
 
         _castingSkillCoroutine = null;
         castingSkill = false;
@@ -64,19 +66,30 @@ public class PlayerController : MonoBehaviour
     {
         return _playerFlip.FacingRight;
     }
+    
     private void OnCollisionEnter2D(Collision2D other)
     {
         if (!other.gameObject.CompareTag($"Enemy"))
         {
             return;            
         }
-
-        _collider2D.enabled = false;
-        AudioManager.Instance.PlaySound(Sounds.Death);
-        Debug.Log("Ya Dead.");
         
-        // Set a death bool.
-        // _playerAnimationManager.SetState(PlayerAnimationState.Dead); // TODO: Uncomment this for death condition.
+        isDead = true;
+        AudioManager.Instance.PlaySound(Sounds.Death);
+        _playerAnimationManager.SetState(PlayerAnimationState.Dead); // TODO: Uncomment this for death condition.
+
+        StartCoroutine(LoseGameCoroutine());
+    }
+
+    private IEnumerator LoseGameCoroutine()
+    {
+        yield return gameController.LoseGameCoroutine();
+        
+        _playerAnimationManager.PlayRevive();
+        
+        yield return new WaitForSeconds(1f);
+        
+        _playerAnimationManager.SetState(PlayerAnimationState.Idle);
     }
     
     // private bool IsGrounded(bool drawCollider = false)
@@ -129,10 +142,8 @@ public class PlayerController : MonoBehaviour
         AttackType = _attackTypes[_currentAttackTypeIndex];
         gameController.UpdateConditionText();
         AudioManager.Instance.PlaySound(Sounds.ChangeOperator);
-        
     }
     
-
     // private void Jump()
     // {
     //     _timeElapsedSinceLastJump -= Time.deltaTime;
@@ -205,8 +216,6 @@ public class PlayerController : MonoBehaviour
             _playerAnimationManager.SetState(PlayerAnimationState.Walking);
         }
         
-        
-        
         _rigidbody2D.velocity = new Vector2(horizontalVelocity, _rigidbody2D.velocity.y);
     }
 
@@ -237,6 +246,11 @@ public class PlayerController : MonoBehaviour
         var enemyInFront = GetEnemyInFront();
 
         if (enemyInFront == null)
+        {
+            return;
+        }
+
+        if (Mathf.Abs(enemyInFront.transform.position.x - transform.position.x) > 7f)
         {
             return;
         }
@@ -294,6 +308,11 @@ public class PlayerController : MonoBehaviour
     private void Update() 
     {
         if (gameController.GameIsPaused())
+        {
+            return;
+        }
+
+        if (isDead)
         {
             return;
         }

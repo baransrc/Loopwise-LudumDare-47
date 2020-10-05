@@ -23,16 +23,21 @@ public class GameController : MonoBehaviour
     [SerializeField] private EndCondition _gameIsPaused;
     [SerializeField] private List<EndCondition> _endConditions;
     [SerializeField] private TextMeshProUGUI _conditionText;
+    [SerializeField] private float _attackRadius;
+
     
     public CameraUtility cameraUtility;
 
     private List<EnemyController> _leftEnemies;
     private List<EnemyController> _rightEnemies;
+    private bool _canEnemiesMove = true;
     
     private GameObject _leftmostFloor;
     private GameObject _rightmostFloor;
     private List<GameObject> _floors;
     private float _enemySpawnCounter;
+    private bool _canGenerateEnemies = true;
+    private bool _canCheckForEndConditions = true;
 
     private void Awake()
     {
@@ -42,6 +47,7 @@ public class GameController : MonoBehaviour
         _enemySpawnCounter = enemySpawnDuration;
         GenerateFloors();
         UpdateConditionText();
+
     }
 
     public void ChangeScore(AttackType attackType, int enemyScore)
@@ -104,7 +110,12 @@ public class GameController : MonoBehaviour
 
     private void CheckEndConditions()
     {
-        if (_endConditions.All(x => x.DoesEndConditionMet() == false))
+        if (!_canCheckForEndConditions)
+        {
+            return;
+        }
+        
+        if (_endConditions.All(x => x.DoesEndConditionMet()))
         {
             Debug.Log("Game Has Ended.");
         }
@@ -128,6 +139,11 @@ public class GameController : MonoBehaviour
     private void MoveEnemies()
     {
         if (player.castingSkill)
+        {
+            return;
+        }
+
+        if (!_canEnemiesMove)
         {
             return;
         }
@@ -163,6 +179,11 @@ public class GameController : MonoBehaviour
     {
         _enemySpawnCounter += Time.deltaTime;
 
+        if (!_canGenerateEnemies)
+        {
+            return;
+        }
+        
         if (_leftEnemies.Count + _rightEnemies.Count >= maxEnemyCount)
         {
             return;
@@ -195,6 +216,41 @@ public class GameController : MonoBehaviour
             enemy.IsRight = false;
             _leftEnemies.Add(enemy);
         }
+    }
+    
+    public IEnumerator LoseGameCoroutine()
+    {
+        _canEnemiesMove = false;
+        _canGenerateEnemies = false;
+        _canCheckForEndConditions = false;
+
+        yield return new WaitForSeconds(2f);
+
+        foreach (var enemy in _leftEnemies)
+        {
+            Destroy(enemy.gameObject);
+        }
+
+        foreach (var enemy in _rightEnemies)
+        {
+            Destroy(enemy.gameObject);
+        }
+        
+        _leftEnemies.Clear();
+        _rightEnemies.Clear();
+
+        foreach (var endCondition in _endConditions)
+        {
+            endCondition.ResetCondition();
+        }
+        
+        player.isDead = false;
+        
+        _canEnemiesMove = true;
+        _canCheckForEndConditions = true;
+        _canGenerateEnemies = true;
+        
+        UpdateConditionText();
     }
 
     public EnemyController GetEnemyInFront(bool isRight)
@@ -270,12 +326,12 @@ public class GameController : MonoBehaviour
                 break;
         }
     }
-
+    
+    
     private void CheckForPause()
     {
         if (!Input.GetKeyDown(KeyCode.Escape))
         {
-            
             return;
         }
 

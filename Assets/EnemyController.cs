@@ -31,6 +31,7 @@ public class EnemyController : MonoBehaviour
     private Coroutine _dyingCoroutine;
     private GameController _gameController;
     private PlayerController _player;
+    private Collider2D _collider;
 
     public AttackType willBeShotBy;
     
@@ -50,7 +51,8 @@ public class EnemyController : MonoBehaviour
         scoreText.text = score.ToString();
         
         _initialY = transform.position.y; // TODO: Do this better.
-        
+
+        _collider = GetComponent<Collider2D>();
         _enemyAnimationManager = GetComponent<EnemyAnimationManager>();
         
         _dyingCoroutine = null;
@@ -83,6 +85,8 @@ public class EnemyController : MonoBehaviour
         }
         
         Destroy(other.gameObject);
+        
+        _collider.enabled = false;
 
         if (_dyingCoroutine != null)
         {

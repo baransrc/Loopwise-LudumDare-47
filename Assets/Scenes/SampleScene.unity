@@ -410,8 +410,8 @@ MonoBehaviour:
   _followX: 1
   _followY: 1
   _followZ: 1
-  _defaultShakeMagnitude: 0.3
-  _defaultDampingSpeed: 1.5
+  _defaultShakeMagnitude: 0.2
+  _defaultDampingSpeed: 1
 --- !u!1 &549980742
 GameObject:
   m_ObjectHideFlags: 0
@@ -1091,14 +1091,17 @@ MonoBehaviour:
     valueType: 1
     valueToRelate: 0
     specialEndConditionName: 1
+    initialValue: 0
   _endConditions:
   - name: playerScore
-    type: 2
+    type: 0
     value: 0
     valueType: 0
     valueToRelate: 180
     specialEndConditionName: 0
+    initialValue: 0
   _conditionText: {fileID: 755167698}
+  _attackRadius: 7
   cameraUtility: {fileID: 519420033}
 --- !u!1 &1032194241
 GameObject:

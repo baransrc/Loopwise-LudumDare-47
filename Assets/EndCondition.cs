@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 public enum ValueType
 {
@@ -32,6 +33,8 @@ public class EndCondition
     public ValueType valueType;
     public int valueToRelate;
     public SpecialEndConditionName specialEndConditionName;
+    public int initialValue;
+    
 
     private string GetOperatorByConditionType()
     {
@@ -73,6 +76,11 @@ public class EndCondition
             case ConditionType.NotEqualTo:
                 return value != valueToRelate;
         }
+    }
+
+    public void ResetCondition()
+    {
+        value = initialValue;
     }
 
     public string GetValue()

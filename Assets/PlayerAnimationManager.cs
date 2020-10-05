@@ -25,6 +25,15 @@ public class PlayerAnimationManager : MonoBehaviour
         _animator = GetComponent<Animator>();
     }
 
+    public void PlayRevive()
+    {
+        _animator.SetBool(IsCastingSkill, false);
+        _animator.SetBool(IsWalking, false);
+        _animator.SetBool(IsIdle, false);
+        _animator.SetBool(IsDead, false);
+        _animator.Play("Player - Revive");
+    }
+
     public void SetState(PlayerAnimationState state)
     {
         switch (state)
