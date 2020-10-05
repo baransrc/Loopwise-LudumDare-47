@@ -23,7 +23,8 @@ public class GameController : MonoBehaviour
     [SerializeField] private EndCondition _gameIsPaused;
     [SerializeField] private List<EndCondition> _endConditions;
     [SerializeField] private TextMeshProUGUI _conditionText;
-
+    
+    public CameraUtility cameraUtility;
 
     private List<EnemyController> _leftEnemies;
     private List<EnemyController> _rightEnemies;

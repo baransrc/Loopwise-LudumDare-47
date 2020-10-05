@@ -89,6 +89,8 @@ public class EnemyController : MonoBehaviour
             return;
         }
         
+        _gameController.cameraUtility.TriggerShake(0.2f, shakeMagnitudeMultiplier: 1.4f);
+        
         AudioManager.Instance.PlaySound(Sounds.Hit);
         
         _dyingCoroutine = StartCoroutine(Die());

@@ -260,6 +260,7 @@ GameObject:
   - component: {fileID: 519420031}
   - component: {fileID: 519420029}
   - component: {fileID: 519420030}
+  - component: {fileID: 519420033}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -374,7 +375,7 @@ Camera:
   m_HDR: 1
   m_AllowMSAA: 0
   m_AllowDynamicResolution: 0
-  m_ForceIntoRT: 0
+  m_ForceIntoRT: 1
   m_OcclusionCulling: 0
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
@@ -389,9 +390,28 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 647118124}
-  m_RootOrder: 0
+  m_Father: {fileID: 0}
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &519420033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 519420028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3fd51768cdb348fab520176f871ae7e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _target: {fileID: 647118124}
+  _smoothingAmount: 0.5
+  _followX: 1
+  _followY: 1
+  _followZ: 1
+  _defaultShakeMagnitude: 0.3
+  _defaultDampingSpeed: 1.5
 --- !u!1 &549980742
 GameObject:
   m_ObjectHideFlags: 0
@@ -879,7 +899,7 @@ Transform:
   - {fileID: 549980743}
   - {fileID: 1637127920}
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &863135869
 GameObject:
@@ -1037,7 +1057,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &878060969
 MonoBehaviour:
@@ -1057,7 +1077,7 @@ MonoBehaviour:
   enemySpawnDistance: {x: 7.5, y: 0, z: 0}
   enemyYPosition: -0.5
   enemySpawnDuration: 2
-  maxEnemyCount: 4
+  maxEnemyCount: 3
   floorPrefab: {fileID: 6741022036451589115, guid: f065c5ae81b0a974a99195d2b34d380a,
     type: 3}
   initialLeft: -16
@@ -1079,6 +1099,7 @@ MonoBehaviour:
     valueToRelate: 180
     specialEndConditionName: 0
   _conditionText: {fileID: 755167698}
+  cameraUtility: {fileID: 519420033}
 --- !u!1 &1032194241
 GameObject:
   m_ObjectHideFlags: 0
@@ -1846,7 +1867,7 @@ PrefabInstance:
     - target: {fileID: 6312037405674191739, guid: be131437b06aaaa4181f02437873f005,
         type: 3}
       propertyPath: m_RootOrder
-      value: 3
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 6312037405674191739, guid: be131437b06aaaa4181f02437873f005,
         type: 3}

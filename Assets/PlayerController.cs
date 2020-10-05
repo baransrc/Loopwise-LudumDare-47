@@ -70,7 +70,8 @@ public class PlayerController : MonoBehaviour
         {
             return;            
         }
-        
+
+        _collider2D.enabled = false;
         AudioManager.Instance.PlaySound(Sounds.Death);
         Debug.Log("Ya Dead.");
         
@@ -78,23 +79,23 @@ public class PlayerController : MonoBehaviour
         // _playerAnimationManager.SetState(PlayerAnimationState.Dead); // TODO: Uncomment this for death condition.
     }
     
-    private bool IsGrounded(bool drawCollider = false)
-    {
-        // var grounded = Physics2D.OverlapBox(_collider2D.bounds.center - new Vector3(0f, _collider2D.bounds.extents.y + (_groundColliderHeight * 0.5f)), new Vector3(_collider2D.bounds.extents.x, _groundColliderHeight * 0.5f), 0, _jumpEnabledGrounds);
-        //
-        // if (drawCollider)
-        // {
-        //     var rayColor = !grounded ? Color.red : Color.green;
-        //
-        //     Debug.DrawLine(_collider2D.bounds.center - new Vector3(_collider2D.bounds.extents.x, _collider2D.bounds.extents.y + _groundColliderHeight), _collider2D.bounds.center - new Vector3(-_collider2D.bounds.extents.x, _collider2D.bounds.extents.y + _groundColliderHeight), rayColor);
-        //     Debug.DrawLine(_collider2D.bounds.center - new Vector3(_collider2D.bounds.extents.x, _collider2D.bounds.extents.y), _collider2D.bounds.center - new Vector3(_collider2D.bounds.extents.x, _collider2D.bounds.extents.y + _groundColliderHeight) , rayColor);
-        //     Debug.DrawLine(_collider2D.bounds.center - new Vector3(-_collider2D.bounds.extents.x, _collider2D.bounds.extents.y), _collider2D.bounds.center - new Vector3(-_collider2D.bounds.extents.x, _collider2D.bounds.extents.y + _groundColliderHeight), rayColor);
-        // }
-        ///
-        // returxn grounded;
-
-        return transform.position.y <= groundedHeight;
-    }
+    // private bool IsGrounded(bool drawCollider = false)
+    // {
+    //     // var grounded = Physics2D.OverlapBox(_collider2D.bounds.center - new Vector3(0f, _collider2D.bounds.extents.y + (_groundColliderHeight * 0.5f)), new Vector3(_collider2D.bounds.extents.x, _groundColliderHeight * 0.5f), 0, _jumpEnabledGrounds);
+    //     //
+    //     // if (drawCollider)
+    //     // {
+    //     //     var rayColor = !grounded ? Color.red : Color.green;
+    //     //
+    //     //     Debug.DrawLine(_collider2D.bounds.center - new Vector3(_collider2D.bounds.extents.x, _collider2D.bounds.extents.y + _groundColliderHeight), _collider2D.bounds.center - new Vector3(-_collider2D.bounds.extents.x, _collider2D.bounds.extents.y + _groundColliderHeight), rayColor);
+    //     //     Debug.DrawLine(_collider2D.bounds.center - new Vector3(_collider2D.bounds.extents.x, _collider2D.bounds.extents.y), _collider2D.bounds.center - new Vector3(_collider2D.bounds.extents.x, _collider2D.bounds.extents.y + _groundColliderHeight) , rayColor);
+    //     //     Debug.DrawLine(_collider2D.bounds.center - new Vector3(-_collider2D.bounds.extents.x, _collider2D.bounds.extents.y), _collider2D.bounds.center - new Vector3(-_collider2D.bounds.extents.x, _collider2D.bounds.extents.y + _groundColliderHeight), rayColor);
+    //     // }
+    //     ///
+    //     // returxn grounded;
+    //
+    //     return transform.position.y <= groundedHeight;
+    // }
 
     public string GetAttackTypeString()
     {
@@ -260,7 +261,9 @@ public class PlayerController : MonoBehaviour
         
         AudioManager.Instance.PlaySound(Sounds.CastingSkill);
         
-        yield return new WaitForSeconds(1.5f);
+        gameController.cameraUtility.TriggerShake(1.5f);
+        
+        yield return new WaitForSeconds(1f);
         
         AudioManager.Instance.StopSound(Sounds.CastingSkill);
         
