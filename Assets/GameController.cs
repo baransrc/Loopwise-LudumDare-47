@@ -88,7 +88,7 @@ public class GameController : MonoBehaviour
     public void UpdateConditionText()
     {
         var newText = "while (";
-        var comments = "" /*+ _gameIsPaused.GetCommentText() + " "*/;
+        var comments =  "";
         var conditionals = "" + _gameIsPaused.GetConditionText() + " && ";
         
         if (_endConditions.Count > 0)
@@ -101,7 +101,8 @@ public class GameController : MonoBehaviour
                 conditionals += _endConditions[i].GetConditionText() + padding;
             }
         }
-        
+
+        comments += !_gameIsPaused.DoesEndConditionMet() ? "\n  // Game is paused." : "";
         _conditionText.text = newText + conditionals + ")\n{\n  // " + comments;
         _conditionText.text += "\n  // Selected Operator: " + player.GetAttackTypeString();
         
@@ -338,6 +339,8 @@ public class GameController : MonoBehaviour
         _gameIsPaused.value = (_gameIsPaused.value + 1) % 2; 
         
         Time.timeScale = _gameIsPaused.value == 0 ? 1 : 0;
+        
+        UpdateConditionText();
     }
 
     public bool GameIsPaused()
