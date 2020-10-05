@@ -62,13 +62,15 @@ public class EnemyController : MonoBehaviour
 
     private IEnumerator Die()
     {
-        _gameController.ChangeScore(willBeShotBy, _score);
-        
         _gameController.RemoveEnemyFromList(this);
         
         SetState(EnemyState.Dead);
         
         yield return new WaitForSeconds(1);
+     
+        _gameController.ChangeScore(willBeShotBy, _score);
+        
+        AudioManager.Instance.PlaySound(Sounds.Score);
         
         Destroy(gameObject);
     }
@@ -86,6 +88,8 @@ public class EnemyController : MonoBehaviour
         {
             return;
         }
+        
+        AudioManager.Instance.PlaySound(Sounds.Hit);
         
         _dyingCoroutine = StartCoroutine(Die());
     }

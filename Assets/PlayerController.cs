@@ -68,9 +68,10 @@ public class PlayerController : MonoBehaviour
     {
         if (!other.gameObject.CompareTag($"Enemy"))
         {
-            return;
+            return;            
         }
         
+        AudioManager.Instance.PlaySound(Sounds.Death);
         Debug.Log("Ya Dead.");
         
         // Set a death bool.
@@ -90,7 +91,7 @@ public class PlayerController : MonoBehaviour
         //     Debug.DrawLine(_collider2D.bounds.center - new Vector3(-_collider2D.bounds.extents.x, _collider2D.bounds.extents.y), _collider2D.bounds.center - new Vector3(-_collider2D.bounds.extents.x, _collider2D.bounds.extents.y + _groundColliderHeight), rayColor);
         // }
         ///
-        // return grounded;
+        // returxn grounded;
 
         return transform.position.y <= groundedHeight;
     }
@@ -120,14 +121,14 @@ public class PlayerController : MonoBehaviour
         {
             return;
         }
+
+        if (!Input.GetKeyDown(KeyCode.Tab)) return;
         
-        if (Input.GetKeyDown(KeyCode.Tab))
-        {
-            _currentAttackTypeIndex = (_currentAttackTypeIndex + 1) % _attackTypes.Length;
-            AttackType = _attackTypes[_currentAttackTypeIndex];
-        }
-        
+        _currentAttackTypeIndex = (_currentAttackTypeIndex + 1) % _attackTypes.Length;
+        AttackType = _attackTypes[_currentAttackTypeIndex];
         gameController.UpdateConditionText();
+        AudioManager.Instance.PlaySound(Sounds.ChangeOperator);
+        
     }
     
 
@@ -164,11 +165,24 @@ public class PlayerController : MonoBehaviour
     {
         if (castingSkill)
         {
+            AudioManager.Instance.StopSound(Sounds.Walking);
             return;
         }
         
         var horizontalVelocity = _rigidbody2D.velocity.x;
-        horizontalVelocity += _horizontalSpeed * Input.GetAxisRaw("Horizontal");
+        var additionalVelocity = _horizontalSpeed * Input.GetAxisRaw("Horizontal");
+
+        if (horizontalVelocity == 0 && additionalVelocity != 0)
+        {
+            AudioManager.Instance.PlaySound(Sounds.Walking);
+        }
+        
+        else if (horizontalVelocity == 0 && additionalVelocity == 0)
+        {
+            AudioManager.Instance.StopSound(Sounds.Walking);
+        }
+        
+        horizontalVelocity += additionalVelocity;
         
         var horizontalDamping = _horizontalDampingNormal;
 
@@ -189,6 +203,8 @@ public class PlayerController : MonoBehaviour
         {
             _playerAnimationManager.SetState(PlayerAnimationState.Walking);
         }
+        
+        
         
         _rigidbody2D.velocity = new Vector2(horizontalVelocity, _rigidbody2D.velocity.y);
     }
@@ -241,7 +257,12 @@ public class PlayerController : MonoBehaviour
     {
         _playerAnimationManager.SetState(PlayerAnimationState.CastingSkill);
         castingSkill = true;
+        
+        AudioManager.Instance.PlaySound(Sounds.CastingSkill);
+        
         yield return new WaitForSeconds(1.5f);
+        
+        AudioManager.Instance.StopSound(Sounds.CastingSkill);
         
         var enemyController = GetEnemyInFront();
         if (enemyController == null)
